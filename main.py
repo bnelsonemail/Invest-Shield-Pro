@@ -1,33 +1,56 @@
 import yfinance as yf
 import pandas as pd
-# import numpy as np
-# import matplotlib.pyplot as plt
 
+# Read the CSV file into a pandas DataFrame
+df_portfolio = pd.read_csv('investment_portfolio.csv')
 
-# Sample Portfolio
-portfolio = {
-    'Assets': ['AAPL', 'MSFT', 'GOOGL', 'BTC-USD'],
-    'Quantity': [10, 5, 8, 0.1]
-}
+# Display the loaded portfolio
+print("Portfolio loaded from CSV:\n", df_portfolio)
 
-df_portfolio = pd.DataFrame(portfolio)
-print(df_portfolio)
-
-# Fetch Real-time Data
+# Fetch real-time data for a given ticker symbol
 def fetch_data(ticker):
-    data = yf.download(ticker, period='1y', interval='1d')
+    data = yf.download(ticker, period='ytd', interval='1d')
     return data['Close']
 
-def calculate_portfolio_value(portfolio):
+# Calculate and print the details of each investment
+def calculate_portfolio_value(df):
     portfolio_value = 0
-    for asset, quantity in zip(portfolio['Assets'], portfolio['Quantity']):
-        price_data = fetch_data(asset)
-        latest_price = price_data.iloc[-1]
-        portfolio_value += latest_price * quantity
-    return portfolio_value
+    
+    # Add columns for current unit price, current value, and gain/loss
+    df['Current Price'] = 0.0
+    df['Current Value'] = 0.0
+    df['Gain/Loss'] = 0.0
 
-portfolio_value = calculate_portfolio_value(df_portfolio)
-print(f"Current Portfolio Value: ${portfolio_value:.2f}")
+    for idx, row in df.iterrows():
+        symbol = row['Symbol']
+        quantity = row['Quantity']
+        purchase_price = row['Purchase Price']
+        
+        # Fetch the latest price data for the symbol
+        try:
+            price_data = fetch_data(symbol)
+            latest_price = price_data.iloc[-1]  # Get the latest closing price
+
+            # Update the DataFrame with the latest prices and calculations
+            df.at[idx, 'Current Price'] = latest_price
+            df.at[idx, 'Current Value'] = latest_price * quantity
+            df.at[idx, 'Gain/Loss'] = (latest_price - purchase_price) * quantity
+
+            # Accumulate the total portfolio value
+            portfolio_value += latest_price * quantity
+
+        except Exception as e:
+            print(f"Failed to fetch data for {symbol}: {e}")
+    
+    return portfolio_value, df
+
+# Calculate and print the portfolio value and gain/loss details
+portfolio_value, df_portfolio = calculate_portfolio_value(df_portfolio)
+print("\nPortfolio Details with Current Prices and Gain/Loss:\n", df_portfolio)
+
+# Print total portfolio value
+print(f"\nCurrent Portfolio Value: ${portfolio_value:.2f}")
+
 
 
 # # Risk Analysis

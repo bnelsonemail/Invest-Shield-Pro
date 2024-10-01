@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_debugtoolbar import DebugToolbarExtension
 from config import DevelopmentConfig # DevelopmentConfig ProductionConfig, TestingConfig
-
+from dotenv import load_dotenv, find_dotenv
 
 # load environment variables from the .env file
 load_dotenv(find_dotenv())
