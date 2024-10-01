@@ -1,0 +1,120 @@
+The goal of the MVP is to focus on core features, delivering a working product with the least amount of functionality needed to solve the main problem.
+
+MVP Features Breakdown
+	User Portfolio Input
+	Real-time Portfolio Tracking
+	Basic Risk Analysis
+	Visualizations
+	Rebalancing Suggestions (optional for MVP)
+
+
+Outline for MVP Development
+1. Set Up Project Structure
+	Step 1.1: Create a new Python project folder.
+		Folder structure might look like this:
+			investment_tracker/
+				├── data/
+				├── src/
+				├── tests/
+				├── requirements.txt
+				└── app.py
+
+	Step 1.2: Initialize a virtualenv or use a venv to manage dependencies.
+	Step 1.3: Create a requirements.txt file and install necessary libraries such as:
+		pandas, numpy, matplotlib, yfinance, flask (if building a web interface), plotly (optional).
+2. User Portfolio Input
+	Step 2.1: Design a simple way to input portfolios.
+		For MVP, use a command-line interface or CSV upload for input.
+		Collect the following information:
+		Asset (e.g., stock ticker like 'AAPL', 'BTC-USD')
+		Quantity
+		Purchase date (optional for basic functionality)
+	Step 2.2: Store inputted data in a Pandas DataFrame for easier manipulation.
+
+import pandas as pd
+
+# Example input
+portfolio = {
+    'Asset': ['AAPL', 'MSFT', 'BTC-USD'],
+    'Quantity': [10, 5, 0.1]
+}
+
+df_portfolio = pd.DataFrame(portfolio)
+print(df_portfolio)
+
+
+3. Real-time Portfolio Tracking
+	Step 3.1: Fetch current price data for assets in the portfolio.
+		Use the yfinance library to pull historical and real-time data.
+	Step 3.2: Write a function to fetch the latest price of assets and calculate the current value of the portfolio.
+
+import yfinance as yf
+
+def fetch_data(ticker):
+    data = yf.download(ticker, period='1d', interval='1d')
+    return data['Close'].iloc[0]
+
+def calculate_portfolio_value(df):
+    total_value = 0
+    for index, row in df.iterrows():
+        price = fetch_data(row['Asset'])
+        total_value += price * row['Quantity']
+    return total_value
+
+portfolio_value = calculate_portfolio_value(df_portfolio)
+print(f"Current Portfolio Value: ${portfolio_value:.2f}")
+
+
+4. Basic Risk Analysis
+	Step 4.1: Implement basic risk and return calculations.
+		For each asset, calculate:
+		Expected return (average log returns over time).
+		Volatility (standard deviation of returns).
+	Step 4.2: Use historical price data from yfinance to perform these calculations.
+
+def calculate_expected_return(ticker):
+    data = yf.download(ticker, period='1y', interval='1d')
+    log_returns = np.log(data['Close'] / data['Close'].shift(1))
+    return log_returns.mean() * 252  # Annualized expected return
+
+def calculate_volatility(ticker):
+    data = yf.download(ticker, period='1y', interval='1d')
+    log_returns = np.log(data['Close'] / data['Close'].shift(1))
+    return log_returns.std() * np.sqrt(252)  # Annualized volatility
+
+	Step 4.3: Output simple risk metrics like the Sharpe ratio to give the user an idea of risk-adjusted returns.
+
+
+5. Visualizations
+	Step 5.1: Add basic visualizations using matplotlib or plotly.
+		Portfolio Allocation Pie Chart: Show how much of the portfolio is in each asset class.
+		Performance Over Time: Show the historical performance of each asset.
+	Step 5.2: Plot the portfolio value over time by aggregating the value of each asset.
+
+import matplotlib.pyplot as plt
+
+def plot_pie_chart(df):
+    plt.figure(figsize=(6, 6))
+    plt.pie(df['Quantity'], labels=df['Asset'], autopct='%1.1f%%')
+    plt.title('Portfolio Allocation')
+    plt.show()
+
+
+6. Rebalancing Suggestions (Optional)
+	Step 6.1: Set a risk tolerance threshold (e.g., based on standard deviation).
+	Step 6.2: Based on the user's risk tolerance, suggest rebalancing by adjusting the allocation in riskier or less risky assets.
+	Step 6.3: Keep the suggestions simple for MVP, such as recommending selling assets that contribute too much volatility to the portfolio and increasing holdings in lower-risk assets.
+Stretch Goals (Post-MVP)
+	User Profiles: Store user portfolios and preferences in a database.
+	Historical Portfolio Performance Tracking: Keep track of past performance.
+	Advanced Metrics: Add advanced calculations such as Monte Carlo simulations, Value at Risk (VaR), or covariance matrix between assets.
+	Web Interface: Migrate the CLI to a simple web-based interface using Flask.
+	Notifications: Set up email or SMS alerts for when portfolio risk exceeds certain levels.
+
+Final Project Flow
+	User Input: Collect user portfolio data via command line or CSV.
+	Fetch Data: Use the yfinance API to get the latest and historical asset prices.
+	Portfolio Value: Calculate the current portfolio value based on asset quantities.
+	Risk/Return Metrics: Calculate expected return, volatility, and other risk metrics.
+	Visualization: Generate simple visualizations like pie charts for allocation and line charts for historical performance.
+	Rebalancing (Optional): Provide basic suggestions for rebalancing the portfolio based on risk.
