@@ -12,7 +12,7 @@ class Portfolio:
     """
     A class to represent a financial portfolio.
 
-    Attributes:
+    Attributes
     ----------
     holdings : list
         A list of dictionaries where each dictionary represents an investment
@@ -25,7 +25,7 @@ class Portfolio:
         """
         Initialize the Portfolio.
 
-        Parameters:
+        Parameters
         ----------
         holdings : list of dict, optional
             A list of holdings. Each holding is represented as a dictionary
@@ -41,7 +41,7 @@ class Portfolio:
         """
         Return a string representation of the portfolio.
 
-        Returns:
+        Returns
         -------
         str
             A string showing each holding's symbol, quantity, and purchase price.
@@ -58,12 +58,12 @@ class Portfolio:
         """
         Fetch real-time stock data for a given ticker symbol using yfinance.
 
-        Parameters:
+        Parameters
         ----------
         ticker : str
             The symbol of the stock (e.g., 'AAPL', 'TSLA', 'BTC-USD').
 
-        Returns:
+        Returns
         -------
         pandas.Series
             A Series containing the historical closing prices of the stock.
@@ -79,13 +79,13 @@ class Portfolio:
         This method updates the DataFrame with the current price, current value,
         and gain/loss for each investment.
 
-        Parameters:
+        Parameters
         ----------
         df : pandas.DataFrame
             The DataFrame representing the portfolio, containing columns
             'Symbol', 'Quantity', and 'Purchase Price'.
 
-        Returns:
+        Returns
         -------
         tuple
             A tuple containing the updated total portfolio value and the updated
@@ -128,14 +128,37 @@ class Portfolio:
                 print(f"Failed to fetch data for {symbol}: {e}")
         
         return portfolio_value, portfolio_performance, df
+    
+    def get_historical_data(self, ticker, period='1y'):
+        """
+        Fetches historical data for a given asset (symbol) over a specified period.
+        
+        Parameters
+        ----------
+        ticker : str
+            The symbol of the asset (e.g., 'AAPL', 'TSLA', 'BTC-USD').
+        period : str, optional
+            The period over which to fetch historical data (default is 1 year).
+            Acceptable values: '1d', '5d', '1mo', '3mo', '6mo', '1y', '5y', 'max'.
+        
+        Returns
+        -------
+        pandas.DataFrame
+            A DataFrame containing the historical data (Date, Open, High, Low, Close).
+        """
+        try:
+            historical_data = yf.download(ticker, period=period)
+            return historical_data
+        except Exception as e:
+            print(f"Failed to fetch historical data for {ticker}: {e}")
+            return None
 
 
-# Create a Portfolio instance and calculate its value
+# Create a Portfolio instance
 portfolio = Portfolio()
-portfolio_value, portfolio_performance, df_portfolio = (
-    portfolio.calculate_portfolio_value(df_portfolio)
-)
 
+# Call calculate_portfolio_value to get the updated portfolio value and performance
+portfolio_value, portfolio_performance, df_portfolio = portfolio.calculate_portfolio_value(df_portfolio)
 
 # Print updated portfolio details with current prices and gain/loss
 print("\nPortfolio Details with Current Prices and Gain/Loss:\n", df_portfolio)
@@ -146,7 +169,7 @@ print(f"\nCurrent Portfolio Value: ${portfolio_value:.2f}")
 # Print total portfolio performance with formatting
 if portfolio_performance < 0:
     # Negative: use parentheses and red color
-    print(f"\033[91mCurrent Portfolio Performance:" 
+    print(f"\033[91mCurrent Portfolio Performance: "
           f"(${abs(portfolio_performance):.2f})\033[0m")
 else:
     # Positive: normal display
@@ -154,31 +177,3 @@ else:
 
 
 
-
-
-# # Risk Analysis
-# def calculate_expected_return(prices):
-#     log_returns = np.log(prices / prices.shift(1))
-#     return log_returns.mean() * 252
-
-# def calculate_risk(prices):
-#     log_returns = np.log(prices / prices.shift(1))
-#     return log_returns.std() * np.sqrt(252)
-
-# # Visualization
-# def plot_portfolio_value(asset, price_data):
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(price_data.index, price_data, label=asset)
-#     plt.title(f'{asset} Price Over Time')
-#     plt.xlabel('Date')
-#     plt.ylabel('Price')
-#     plt.legend()
-#     plt.show()
-
-# # Example usage
-# for asset in portfolio['Assets']:
-#     data = fetch_data(asset)
-#     plot_portfolio_value(asset, data)
-
-#     print(f"Expected return for {asset}: {calculate_expected_return(data):.2f}")
-#     print(f"Risk (volatility) for {asset}: {calculate_risk(data):.2f}")
